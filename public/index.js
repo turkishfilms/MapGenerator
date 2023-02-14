@@ -9,7 +9,7 @@
  * 
  * 
  */
-const CELLSIZE = 75,
+const CELLSIZE = 15,
     EMPTYVAL = { num: 0, mute: 1 }
 let width, height, grid, newGrid, verb = false
 
@@ -18,16 +18,23 @@ function setup() {
     height = windowHeight
     createCanvas(width, height)
     background(0)
+    const starting = 100
     grid = ranGrid(genGrid(width,
-        height, CELLSIZE, { num: 0, mute: 1 }), [{ num: 0, mute: 1 },
-        { num: 1, mute: 1 }, { num: 2, mute: 1 }, { num: 3, mute: 1 }
+        height, CELLSIZE, { num: 0, mute: starting }), [{ num: 0, mute: starting },
+        { num: 1, mute: starting }, { num: 2, mute: starting }, { num: 3, mute: starting }
     ])
-    frameRate(0)
+    frameRate(60)
 }
 
-function keyPressed(){
-    if(key == " ")showGrid(grid)
-    if(key == "n") updateGrid(grid)
+function keyPressed() {
+    if (key == " ") showGrid(grid)
+    if (key == "n") updateGrid(grid)
+    if (key == "m")
+        for (let i = 0; i < 100; i++) {
+            updateGrid(grid)
+            showGrid(grid)
+        }
+
 }
 
 
@@ -99,7 +106,7 @@ const correctColor = (number) => {
 }
 
 const showGrid = (grid) => {
-    background(0)
+    // background(0)
     grid.forEach((column, x) => {
         column.forEach((cell, y) => {
             correctColor(cell.num)
@@ -112,10 +119,10 @@ const getNeighbors = (grid, x, y) => {
     const neighbors = []
     for (let i = -1; i < 2; i++) {
         for (let j = -1; j < 2; j++) {
-            if (x == 0 || x == grid.length-1 || y == 0 || y == grid[0].length-1) neighbors.push({ num: -1, mute: 0 })
+            if (x == 0 || x == grid.length - 1 || y == 0 || y == grid[0].length - 1) neighbors.push({ num: -1, mute: 0 })
             else {
                 const val = grid[x + i][y + j]
-                if(verb) console.log("x,", x, "y", y, i, j, val)
+                if (verb) console.log("x,", x, "y", y, i, j, val)
                 neighbors.push(val)
             }
         }
@@ -124,30 +131,32 @@ const getNeighbors = (grid, x, y) => {
 }
 
 const updateCell = (grid, x, y) => {
-    if(verb) console.log("starting update of", x, y)
+    if (verb) console.log("starting update of", x, y)
     //how tho lol
     const neighbors = getNeighbors(grid, x, y)
     let counts = [0, 0, 0]
-    if(verb) console.log("the neighbors of", x, y, "are", neighbors)
+    if (verb) console.log("the neighbors of", x, y, "are", neighbors)
     neighbors.forEach(neighbor => {
-        if(verb) console.log("this neighbor is", neighbor, )
+        if (verb) console.log("this neighbor is", neighbor, )
         if (neighbor.num != -1 && neighbor.num != 0) counts[neighbor.num]++
     })
-    const prize = { num: 1 + counts.indexOf(Math.max(...counts)), mute: 0 }
+    const prize = { num: 1 + counts.indexOf(Math.max(...counts)), mute: max(grid[x][y].mute--, 0) }
     grid[x][y] = prize
-
 }
 
 const updateGrid = () => {
+    // console.log("hi")
     grid.forEach((column, x) => {
         column.forEach((cell, y) => {
-            updateCell(grid, x, y)
+            if (grid[x][y].mute>0) updateCell(grid, x, y)
         })
     })
 }
 
 function draw() {
-    // background(0)
-    // showGrid(grid)
-    noLoop()
+    background(0)
+    // console.log("::::::::::::")
+    updateGrid(grid)
+    showGrid(grid)
+    // noLoop()
 }
