@@ -52,7 +52,7 @@ const genGrid = (w, h, cellSize, val) => {
 const ranGrid = (grid, vals)=>{
     const ranThresh = 1/vals.length
     const mixedGrid = grid.slice()
-mixedGrid.forEach()
+mixedGrid.forEach((column,x)=)
 
     return mixedGrid
 }
