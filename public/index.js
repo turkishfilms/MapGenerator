@@ -9,7 +9,7 @@
  * 
  * 
  */
-const CELLSIZE = 30,
+const CELLSIZE = 100,
     EMPTYVAL = 0
 let width, height, grid, newGrid
 
@@ -18,7 +18,9 @@ function setup() {
     height = windowHeight
     createCanvas(width, height)
     background(0)
-    grid = genGrid(width, height, CELLSIZE, EMPTYVAL)
+    grid = genGrid(width, height, CELLSIZE, 0)
+    // newGrid = ranGrid(grid, [0, 1, 2, 3])
+    // grid = newGrid.slice()
 }
 
 /**Creates a 2d array
@@ -48,12 +50,15 @@ const genGrid = (w, h, cellSize, val) => {
  * @param { Array } grid - 2d array 
  * @param { Array } vals - Choices for the randomization
  * @returns { Array } - 2d array 
-*/
-const ranGrid = (grid, vals)=>{
-    const ranThresh = 1/vals.length
+ */
+const ranGrid = (grid, vals) => {
+    const ranThresh = 1 / vals.length
     const mixedGrid = grid.slice()
-mixedGrid.forEach((column,x)=)
-
+    mixedGrid.forEach((column, x) => {
+        column.forEach((cell, y) => {
+            mixedGrid[x][y] = floor(random() / ranThresh)
+        })
+    })
     return mixedGrid
 }
 
@@ -61,7 +66,7 @@ mixedGrid.forEach((column,x)=)
  * @function
  * @param { Number } number - The value in a cell
  * @returns { Array } - Array[3] [r,g,b]
-*/
+ */
 const correctColor = (number) => {
     /**
      * 0 is empty
@@ -69,28 +74,32 @@ const correctColor = (number) => {
      * 2 is water
      * 3 is beach
      */
-    switch(number){
-        case 0:{
-         fill(50)
+    switch (number) {
+        case 0: {
+            fill(50)
         }
-        case 1:{
-         fill(150,100,30)
+        case 1: {
+            fill(150, 100, 30)
         }
-        case 2:{
-         fill(0,25,180)
+        case 2: {
+            fill(0, 25, 180)
         }
-        case 3:{
-         fill(250,200,30)
+        case 3: {
+            fill(250, 200, 30)
         }
     }
 }
 
-function draw() {
-    background(0)
+const showGrid = (grid) => {
     grid.forEach((column, x) => {
         column.forEach((cell, y) => {
             correctColor(cell)
-            rect(x * CELLSIZE, y * CELLSIZE, CELLSIZE)
+            rect(x * CELLSIZE, y * CELLSIZE, CELLSIZE, CELLSIZE)
         })
     })
+}
+
+function draw() {
+    background(0)
+    showGrid(grid)
 }
