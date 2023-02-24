@@ -9,7 +9,7 @@
  * 
  * 
  */
-const CELLSIZE = 2,
+const CELLSIZE = 25,
     EMPTYVAL = { num: 0, mute: 1 }
 let width, height, grid, newGrid, verb = false
 
@@ -30,14 +30,18 @@ function setup() {
         { num: 1, mute: starting }, { num: 2, mute: starting }, { num: 3, mute: starting }
     ]
     const FIRST = CELLLIST[0]
-    showGrid(ranGrid(genGrid(width,
-        height, CELLSIZE, FIRST), CELLLIST))
+    grid = genGrid(width, height, CELLSIZE, FIRST)
+    // showGrid(ranGrid(grid, [0]), 0)
+    loadPixels()
+    pixelDensity(3)
+    newGrid = noiseMapStuff({ x: 0.01, y: mouseY })
+    frameRate(2)
 
 }
 
 const noiseMapStuff = (config) => {
     /**IN GENERAL HERES THE PLAN
-     * TODO: GEnerate "Smooth" Noise (height map)
+     * TODO: GEnerate "Smooth" Noise (height map) perlin/pixels
     *  TODO: Generate border "noise" (border/isldn mask)
     *  TODO: color everything
 
@@ -51,24 +55,66 @@ const noiseMapStuff = (config) => {
     const borderNoise = (squareness) => {
 
     }
+    const danshiff = (inc) => {
+        let yoff = 0;
+        loadPixels();
+        for (let y = 0; y < height; y++) {
+            let xoff = 0;
+            for (let x = 0; x < width; x++) {
+                let index = (x + y * width) * 4;
+                // let r = random(255);
+                let r = noise(xoff, yoff) * 255;
+                pixels[index + 0] = r;
+                pixels[index + 1] = r;
+                pixels[index + 2] = r;
+                pixels[index + 3] = 255;
 
+                xoff += inc;
+            }
+            yoff += inc;
+        }
+        updatePixels();
+        let me = []
+        for (let i = 0; i < pixels.length; i += 4) me.push(pixels[i])
+        return me
+    }
 
     const coloring = (input) => {
         heightValToColor(input)
     }
 
     const heightValToColor = (heightVal) => {
-
+        stroke(255 * heightVal)
+    }
+    const loseerville = () => {
+        const n = 1
+        for (let i = 0; i < height / n; i++) {
+            for (let j = 0; j < width / n; j++) {
+                coloring(noise((i + config.x) * (j + config.y)))
+                point(j + width / n, i + height / n)
+            }
+        }
     }
 
+    return danshiff(config.x)
 }
 
 
 
+function touchStarted() {
+    background(0)
+    noiseSeed(mouseX)
+    noiseMapStuff({ x: 0.02, y: mouseY })
+}
 
 function keyPressed() {
-    if (key == " ") showGrid(grid)
     if (key == "n") updateGrid(grid)
+    if (key == " ") showGrid(grid)
+    if (key == "p") {
+        background(0)
+        noiseMapStuff({ x: (1 / mouseX) * 0.01, y: 1 / mouseY })
+        console.log("nope")
+    }
     if (key == "m")
         for (let i = 0; i < 100; i++) {
             updateGrid(grid)
@@ -109,7 +155,7 @@ const genGrid = (w, h, cellSize, val) => {
 const ranGrid = (grid, vals) => {
     const ranThresh = 1 / vals.length
     const mixedGrid = grid.slice()
-    if (ranThresh == 1) {
+    if (ranThresh != 1) {
         mixedGrid.forEach((column, x) => {
             column.forEach((cell, y) => {
                 mixedGrid[x][y] = vals[floor(random() / ranThresh)]
@@ -153,16 +199,27 @@ const correctColor = (number) => {
     }
 }
 
-const showGrid = (grid) => {
-    // background(0)
-    grid.forEach((column, x) => {
-        column.forEach((cell, y) => {
-            correctColor(cell.num)
-            rect(x * CELLSIZE, y * CELLSIZE, CELLSIZE, CELLSIZE)
-        })
-    })
-}
 
+
+const showGrid = (grid, real) => {
+    // background(0)
+    if (real) {
+        grid.forEach((column, x) => {
+            column.forEach((cell, y) => {
+                correctColor(cell.num)
+                rect(x * CELLSIZE, y * CELLSIZE, CELLSIZE, CELLSIZE)
+            })
+        })
+    } else {
+        grid.forEach((column, x) => {
+            column.forEach((cell, y) => {
+                fill(cell * 255)
+
+                rect(x * CELLSIZE, y * CELLSIZE, CELLSIZE, CELLSIZE)
+            })
+        })
+    }
+}
 const getNeighbors = (grid, x, y) => {
     const neighbors = []
     for (let i = -1; i < 2; i++) {
@@ -202,9 +259,7 @@ const updateGrid = () => {
 }
 
 function draw() {
-    // background(0)
-    // console.log("::::::::::::")
-    // updateGrid(grid)
-    // showGrid(grid)
-    // noLoop()
+    background(0)
+    noiseSeed(frameCount / 1000)
+    noiseMapStuff({ x: 0.02 })
 }
