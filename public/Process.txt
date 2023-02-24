@@ -1,0 +1,12 @@
+So I tryied my own and it was bad
+
+then i did sand and it was better
+
+now im trying masks. 
+TODO: GEnerate "Smooth" Noise (height map)
+TODO: Generate border "noise" (border/isldn mask)
+TODO: color everything
+
+TODONE:
+TODONE:
+TODONE:

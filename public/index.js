@@ -5,26 +5,66 @@
  * TODO: 
  * TODO: 
  * 
- * 
+ * ----
  * 
  * 
  */
-const CELLSIZE = 15,
+const CELLSIZE = 2,
     EMPTYVAL = { num: 0, mute: 1 }
 let width, height, grid, newGrid, verb = false
 
 function setup() {
+    noStroke()
     width = windowWidth
     height = windowHeight
     createCanvas(width, height)
     background(0)
+
     const starting = 100
-    grid = ranGrid(genGrid(width,
-        height, CELLSIZE, { num: 0, mute: starting }), [{ num: 0, mute: starting },
+    // grid = ranGrid(genGrid(width,
+    //     height, CELLSIZE, { num: 0, mute: starting }), [{ num: 0, mute: starting },
+    //     { num: 1, mute: starting }, { num: 2, mute: starting }, { num: 3, mute: starting }
+    // ])
+    // frameRate(60)
+    const CELLLIST = [{ num: 0, mute: starting },
         { num: 1, mute: starting }, { num: 2, mute: starting }, { num: 3, mute: starting }
-    ])
-    frameRate(60)
+    ]
+    const FIRST = CELLLIST[0]
+    showGrid(ranGrid(genGrid(width,
+        height, CELLSIZE, FIRST), CELLLIST))
+
 }
+
+const noiseMapStuff = (config) => {
+    /**IN GENERAL HERES THE PLAN
+     * TODO: GEnerate "Smooth" Noise (height map)
+    *  TODO: Generate border "noise" (border/isldn mask)
+    *  TODO: color everything
+
+
+     */
+
+    const smoothNoise = (smoothness) => {
+
+    }
+
+    const borderNoise = (squareness) => {
+
+    }
+
+
+    const coloring = (input) => {
+        heightValToColor(input)
+    }
+
+    const heightValToColor = (heightVal) => {
+
+    }
+
+}
+
+
+
 
 function keyPressed() {
     if (key == " ") showGrid(grid)
@@ -69,11 +109,19 @@ const genGrid = (w, h, cellSize, val) => {
 const ranGrid = (grid, vals) => {
     const ranThresh = 1 / vals.length
     const mixedGrid = grid.slice()
-    mixedGrid.forEach((column, x) => {
-        column.forEach((cell, y) => {
-            mixedGrid[x][y] = vals[floor(random() / ranThresh)]
+    if (ranThresh == 1) {
+        mixedGrid.forEach((column, x) => {
+            column.forEach((cell, y) => {
+                mixedGrid[x][y] = vals[floor(random() / ranThresh)]
+            })
         })
-    })
+    } else {
+        mixedGrid.forEach((column, x) => {
+            column.forEach((cell, y) => {
+                mixedGrid[x][y] = random()
+            })
+        })
+    }
     return mixedGrid
 }
 
@@ -148,15 +196,15 @@ const updateGrid = () => {
     // console.log("hi")
     grid.forEach((column, x) => {
         column.forEach((cell, y) => {
-            if (grid[x][y].mute>0) updateCell(grid, x, y)
+            if (grid[x][y].mute > 0) updateCell(grid, x, y)
         })
     })
 }
 
 function draw() {
-    background(0)
+    // background(0)
     // console.log("::::::::::::")
-    updateGrid(grid)
-    showGrid(grid)
+    // updateGrid(grid)
+    // showGrid(grid)
     // noLoop()
 }
