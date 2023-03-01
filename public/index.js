@@ -4,9 +4,7 @@
  * TODO: grow seeds
  * TODO: 
  * TODO: 
- * 
  * ----
- * 
  * 
  */
 const CELLSIZE = 25,
@@ -36,25 +34,47 @@ function setup() {
     pixelDensity(3)
     newGrid = noiseMapStuff({ x: 0.01, y: mouseY })
     frameRate(2)
-
 }
 
 const noiseMapStuff = (config) => {
     /**IN GENERAL HERES THE PLAN
      * TODO: GEnerate "Smooth" Noise (height map) perlin/pixels
-    *  TODO: Generate border "noise" (border/isldn mask)
-    *  TODO: color everything
-
-
+     *  TODO: Generate border "noise" (border/isldn mask)
+     *  TODO: color everything
      */
 
     const smoothNoise = (smoothness) => {
 
     }
-
+    /**
+     * Creates an array mask
+     * @function
+     * @param { Number } squareness 
+     * @param { Number } fallOff
+     * @desc creates an array of length pixels.length/4 of values between 1 and 0. 1 in the center and tapering off radially to 0 by factor fallOff
+     * @issue if user can pick focus how do I algotihmically find the max Dist ( always in a corner: so do a quadrant check and pick "opposite quadrants corner") 
+     */
     const borderNoise = (squareness) => {
+        let borderMap = []
+        const pd = pixelDensity()
+        const borderMapSize = height * pd * width * pd
+        const focus = { //const for now, Parameterize this later
+            x: width * d / 2,
+            y: heigth * d / 2
+        }
+        const maxDist = dist(0,0,focus.x,focus.y)
+        for (let i = 0; i < borderMapSize; i++) {
+            const x = i % (width * d)
+            const y = floor(i / (width * d))
+            const distToFocus = dist(x, y, focus.x, focus.y)
+            const maskVal = map(distToFocus,0,maxDist, 1,0)
+            borderMap.push(maskVal)
+        }
+        console.log("bordermaskers be bordermaskin")
+        return borderMap
 
     }
+
     const danshiff = (inc) => {
         let yoff = 0;
         loadPixels();
