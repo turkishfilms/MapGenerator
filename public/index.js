@@ -17,74 +17,110 @@ let width,
     verb = false,
     something,
     pd,
-    bml,
+    borderMap,
     borderMapSize,
-    di
+    distList
+
 
 function setup() {
     noStroke()
-    width = windowWidth
-    height = windowHeight
-    // width = 100
-    // height = 100
+    // width = windowWidth
+    // height = windowHeight
+    width = 100
+    height = 100
     createCanvas(width, height)
     background(0)
     pd = pixelDensity(1)._pixelDensity
     borderMapSize = height * pd * width * pd * 4
 
     const starting = 100
-    // grid = ranGrid(genGrid(width,
-    //     height, CELLSIZE, { num: 0, mute: starting }), [{ num: 0, mute: starting },
-    //     { num: 1, mute: starting }, { num: 2, mute: starting }, { num: 3, mute: starting }
-    // ])
-    // frameRate(60)
+
     const CELLLIST = [{ num: 0, mute: starting },
         { num: 1, mute: starting }, { num: 2, mute: starting }, { num: 3, mute: starting }
     ]
+
     const FIRST = CELLLIST[0]
-    // grid = genGrid(width, height, CELLSIZE, FIRST)
-    // showGrid(ranGrid(grid, [0]), 0)
+    
     loadPixels()
-    let { bm, d } = borderNoise(5.3)
-    bml = bm
-    di = d
-    // console.log(bml.length, pixels.length, pd)
-    something = ranshiff(0.001)
-    // duder(bml)
-    combine(something, bml)
+    let { bm, dis } = borderNoise(5)
+    borderMap = bm
+    distList = dis
+    // something = ranshiff(0.001)
+    const borderM = Array(pixels.length).fill(1)
+    // combine(something, borderM)
+    distList = rs2(0.01, borderM)
+    console.log("Showed")
 }
+
+/**
+pixels long
+noise long
+border long
+
+
+
+
+
+ */
 
 
 const combine = (noise, mask) => {
     loadPixels();
     for (let y = 0; y < height * pd; y++) {
         for (let x = 0; x < width * pd; x++) {
-            let indexo = (x + y * width);
-            let index = indexo * 4;
-            let m = mask[indexo] * 255;
-            let r = noise[index]
-            let c = r * m
-            pixels[index + 0] = c;
-            pixels[index + 1] = c;
-            pixels[index + 2] = c;
-            pixels[index + 3] = 255;
+            const maskIndex = (x + y * width * pd);
+            const noiseIndex = maskIndex * 4;
+            const val = noise[noiseIndex] //* mask[maskIndex]
+            pixels[noiseIndex + 0] = val;
+            pixels[noiseIndex + 1] = val;
+            pixels[noiseIndex + 2] = val;
+            pixels[noiseIndex + 3] = 255;
         }
     }
     updatePixels();
 }
 
+const rs2 = (inc, mask, seed = 35) => {
+    const got = []
+    let yoff = 0;
+    noiseSeed(seed)
+    loadPixels();
+    for (let y = 0; y < height; y++) {
+        let xoff = 0;
+        for (let x = 0; x < width; x++) {
+            let index = (x + y * width) * 4;
+            // let r = random(255);
+            let r = noise(xoff, yoff) * 255 *mask[index];
+            pixels[index + 0] = r;
+            pixels[index + 1] = r;
+            pixels[index + 2] = r;
+            pixels[index + 3] = 255;
+            got.push(r)
+            xoff += inc;
+        }
+        yoff += inc;
+    }
 
+    updatePixels();
+    return got
+}
 const ranshiff = (inc) => {
-    const ran = []
+    loadPixels()
+    const noise_ = []
     let yoff = 0
     let xoff = 0
     let y_ = 0
     let x_ = 0
-    for (let i = 0; i < borderMapSize; i++) {
+    for (let i = 0; i < borderMapSize; i += 4) { //long
+        const woah = noise(xoff, yoff)
+        noise_.push(woah)
+        pixels[i + 0] = woah * 255
+        pixels[i + 1] = woah * 255
+        pixels[i + 2] = woah * 255
+        pixels[i + 3] = 255
         const x = i % (width * pd)
         const y = floor(i / (width * pd))
-        const noiseVal = noise(xoff, yoff) * 255
-        ran.push(noiseVal)
+
         if (x > x_) xoff += inc
         else xoff = 0
         if (y > y_) yoff += inc
@@ -92,7 +128,8 @@ const ranshiff = (inc) => {
         x_ = x
     }
     console.log("randoming currently")
-    return ran
+    updatePixels()
+    return noise_
 }
 
 /**
@@ -103,7 +140,6 @@ const ranshiff = (inc) => {
  * @desc creates an array of length pixels.length/4 of values between 1 and 0. 1 in the center and tapering off radially to 0 by factor fallOff
  * @issue if user can pick focus how do I algotihmically find the max Dist ( always in a corner: so do a quadrant check and pick "opposite quadrants corner") 
  */
-
 const danshiff = (inc) => {
     let yoff = 0;
     loadPixels();
@@ -123,10 +159,12 @@ const danshiff = (inc) => {
         yoff += inc;
     }
     updatePixels();
-    let me = []
-    for (let i = 0; i < pixels.length; i += 4) me.push(pixels[i])
-    return me
+    // let me = []
+    // for (let i = 0; i < pixels.length; i++) me.push(pixels[i])
+    // return me
 }
+
+
 
 const duder = (mask) => {
     loadPixels();
@@ -145,13 +183,13 @@ const duder = (mask) => {
 }
 
 const borderNoise = (fallOff, squareness) => {
-    let borderMap = []
-    let dist_ = []
+    const borderMap = []
+    const dist_ = []
     const focus = { //const for now, Parameterize this later
         x: width * pd / 2,
         y: height * pd / 2
     }
-    const maxDist = dist(0, 0, focus.x*2, focus.y*2)
+    const maxDist = dist(0, 0, width * pd * 2, height * pd * 2)
     console.log("dist", maxDist)
     for (let i = 0; i < borderMapSize; i++) {
         const x = i % (width * pd)
@@ -162,9 +200,8 @@ const borderNoise = (fallOff, squareness) => {
         borderMap.push(maskVal)
     }
     console.log("bordermaskers be bordermaskin")
-    return { bm: borderMap, d: dist_ }
+    return { bm: borderMap, dis: dist_ }
 }
-
 
 const noiseMapStuff = (config) => {
     /**IN GENERAL HERES THE PLAN
@@ -198,8 +235,6 @@ const noiseMapStuff = (config) => {
     return thething
 }
 
-
-
 function touchStarted() {
     background(0)
     noiseSeed(mouseX)
@@ -221,7 +256,6 @@ function keyPressed() {
         }
 
 }
-
 
 /**Creates a 2d array
  * @function
@@ -298,8 +332,6 @@ const correctColor = (number) => {
     }
 }
 
-
-
 const showGrid = (grid, real) => {
     // background(0)
     if (real) {
@@ -319,6 +351,7 @@ const showGrid = (grid, real) => {
         })
     }
 }
+
 const getNeighbors = (grid, x, y) => {
     const neighbors = []
     for (let i = -1; i < 2; i++) {
