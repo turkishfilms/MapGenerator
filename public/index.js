@@ -40,45 +40,71 @@ function setup() {
     ]
 
     const FIRST = CELLLIST[0]
-    
-    loadPixels()
-    let { bm, dis } = borderNoise(5)
-    borderMap = bm
-    distList = dis
+
+    borderMap = bN(4)
     // something = ranshiff(0.001)
     const borderM = Array(pixels.length).fill(1)
     // combine(something, borderM)
-    distList = rs2(0.01, borderM)
+    distList = rs2(0.1, borderM)
     console.log("Showed")
 }
 
-/**
-pixels long
-noise long
-border long
 
-
-
-
-
- */
-
-
-const combine = (noise, mask) => {
-    loadPixels();
-    for (let y = 0; y < height * pd; y++) {
-        for (let x = 0; x < width * pd; x++) {
-            const maskIndex = (x + y * width * pd);
-            const noiseIndex = maskIndex * 4;
-            const val = noise[noiseIndex] //* mask[maskIndex]
-            pixels[noiseIndex + 0] = val;
-            pixels[noiseIndex + 1] = val;
-            pixels[noiseIndex + 2] = val;
-            pixels[noiseIndex + 3] = 255;
+const bN = (fallOff, foc,squareness) => {
+    const borderMap = []
+    const focus = foc || { //const for now, Parameterize this later
+        x: width * pd / 2,
+        y: height * pd / 2
+    }
+    const maxDist = dist(0, 0, width * pd, height * pd)
+    for (let y = 0; y < height*pd; y++) {
+        for (let x = 0; x < width*pd; x++) {
+            const distToFocus = dist(x, y, focus.x, focus.y)
+            const maskVal = map(fallOff * distToFocus, 0,maxDist, 1, 0)
+            borderMap.push(maskVal)
         }
     }
-    updatePixels();
+
+    console.log("killer killin")
+    return borderMap
 }
+
+let bn = (fallOff) => {
+    const borderMap = []
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const distToC = dist( y,x,50,50)
+            const maskVal = map(distToC, 0,70, 1, 0)**fallOff
+            borderMap.push(maskVal);borderMap.push(maskVal);borderMap.push(maskVal);borderMap.push(maskVal)
+        }
+    }
+    return borderMap
+}
+
+let rn = (inc, mask,w) => {
+    let yoff = 0;
+    noiseSeed(35)
+    loadPixels();
+    for (let y = 0; y < height; y++) {
+        let xoff = 0;
+        for (let x = 0; x < width; x++) {
+            let index = (x + y * width)*4
+            let r =0
+            if(w=="noise"){
+                r =noise(xoff,yoff)
+            }else if(w=="mask"){
+                r = mask[index]
+            }else r =noise(xoff,yoff)*mask[index]
+            pixels[index + 0] = r*255;
+            pixels[index + 1] = r*255;
+            pixels[index + 2] = r*255;
+            pixels[index + 3] = 255;
+            xoff += inc;
+        }
+        yoff += inc;
+    }
+    updatePixels();
+} 
 
 const rs2 = (inc, mask, seed = 35) => {
     const got = []
@@ -90,7 +116,7 @@ const rs2 = (inc, mask, seed = 35) => {
         for (let x = 0; x < width; x++) {
             let index = (x + y * width) * 4;
             // let r = random(255);
-            let r = noise(xoff, yoff) * 255 *mask[index];
+            let r = 255 * mask[index];
             pixels[index + 0] = r;
             pixels[index + 1] = r;
             pixels[index + 2] = r;
@@ -100,10 +126,10 @@ const rs2 = (inc, mask, seed = 35) => {
         }
         yoff += inc;
     }
-
     updatePixels();
-    return got
+    // return got
 }
+
 const ranshiff = (inc) => {
     loadPixels()
     const noise_ = []
@@ -166,6 +192,7 @@ const danshiff = (inc) => {
 
 
 
+
 const duder = (mask) => {
     loadPixels();
     for (let y = 0; y < height * pd; y++) {
@@ -182,26 +209,50 @@ const duder = (mask) => {
     updatePixels();
 }
 
+/**
+pixels long
+noise long
+border long
+
+ */
+
+
+const combine = (noise, mask) => {
+    loadPixels();
+    for (let y = 0; y < height * pd; y++) {
+        for (let x = 0; x < width * pd; x++) {
+            const maskIndex = (x + y * width * pd);
+            const noiseIndex = maskIndex * 4;
+            const val = noise[noiseIndex] //* mask[maskIndex]
+            pixels[noiseIndex + 0] = val;
+            pixels[noiseIndex + 1] = val;
+            pixels[noiseIndex + 2] = val;
+            pixels[noiseIndex + 3] = 255;
+        }
+    }
+    updatePixels();
+}
+
 const borderNoise = (fallOff, squareness) => {
     const borderMap = []
-    const dist_ = []
     const focus = { //const for now, Parameterize this later
         x: width * pd / 2,
         y: height * pd / 2
     }
     const maxDist = dist(0, 0, width * pd * 2, height * pd * 2)
-    console.log("dist", maxDist)
+
     for (let i = 0; i < borderMapSize; i++) {
         const x = i % (width * pd)
         const y = floor(i / (width * pd))
         const distToFocus = dist(x, y, focus.x, focus.y)
-        dist_.push(distToFocus)
-        const maskVal = map(fallOff * distToFocus, 0, maxDist, 1, 0)
+        const maskVal = map(fallOff * distToFocus, 0, maxDist/2, 1, 0)
         borderMap.push(maskVal)
     }
     console.log("bordermaskers be bordermaskin")
-    return { bm: borderMap, dis: dist_ }
+    return borderMap
 }
+
+
 
 const noiseMapStuff = (config) => {
     /**IN GENERAL HERES THE PLAN
