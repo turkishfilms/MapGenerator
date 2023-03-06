@@ -41,15 +41,45 @@ function setup() {
 
     // const FIRST = CELLLIST[0]
 
-    // borderMap = bN(4)
-    // something = ranshiff(0.001)
-    // const borderM = Array(pixels.length).fill(1)
-    // combine(something, borderM)
-    // distList = rs2(0.1, borderM)
     // distList = rn(0.1, bn(5), "both")
-    distList = island()
+    distList = island2()
     console.log("Showed")
 }
+
+
+/**Creates an island2
+ *@function 
+@desc males an isalnd in the pixels array
+@param { Number } inc -Increment value for perlin noise, affects "smoothness"
+@param { Number } fallOff -The "steepness" of the border map boundary
+@param { Array[2] } center -Coords of island's center 
+@param { Number } seed -seed for noise()
+@param { Number } squareness -How sqaure the border is
+ */
+const island2 = (inc = 0.1, fallOff = 3, center = { x: (width / 2), y: (height / 2) },seed= random(100), squareness = 0) => {
+    const maxDist = dist(0, 0, center.x, center.y)
+    let yoff = 0;
+    noiseSeed(seed)
+    loadPixels();
+    for (let y = 0; y < height; y++) {
+        let xoff = 0;
+        for (let x = 0; x < width; x++) {
+            const distToC = dist(x, y, center.x, center.y)
+            const maskVal = map(distToC, 0, maxDist, 1, 0) ** fallOff
+            const index = (x + y * width) * 4
+            const r = noise(xoff, yoff) * maskVal
+            pixels[index + 0] = r * 255;
+            pixels[index + 1] = r * 255;
+            pixels[index + 2] = r * 255;
+            pixels[index + 3] = 255;
+            xoff += inc;
+        }
+        yoff += inc;
+    }
+    updatePixels();
+}
+
+
 
 /**Creates an island
  *@function 
@@ -491,6 +521,7 @@ const updateGrid = () => {
 }
 
 function draw() {
+    island()
     // background(0)
     // noiseSeed(frameCount / 1000)
     // noiseMapStuff({ x: 0.02 })
