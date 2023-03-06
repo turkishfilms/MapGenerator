@@ -31,36 +31,122 @@ function setup() {
     createCanvas(width, height)
     background(0)
     pd = pixelDensity(1)._pixelDensity
-    borderMapSize = height * pd * width * pd * 4
+    // borderMapSize = height * pd * width * pd * 4
 
-    const starting = 100
+    // const starting = 100
 
-    const CELLLIST = [{ num: 0, mute: starting },
-        { num: 1, mute: starting }, { num: 2, mute: starting }, { num: 3, mute: starting }
-    ]
+    // const CELLLIST = [{ num: 0, mute: starting },
+    //     { num: 1, mute: starting }, { num: 2, mute: starting }, { num: 3, mute: starting }
+    // ]
 
-    const FIRST = CELLLIST[0]
+    // const FIRST = CELLLIST[0]
 
-    borderMap = bN(4)
+    // borderMap = bN(4)
     // something = ranshiff(0.001)
-    const borderM = Array(pixels.length).fill(1)
+    // const borderM = Array(pixels.length).fill(1)
     // combine(something, borderM)
-    distList = rs2(0.1, borderM)
+    // distList = rs2(0.1, borderM)
+    // distList = rn(0.1, bn(5), "both")
+    distList = island()
     console.log("Showed")
 }
 
+/**Creates an island
+ *@function 
+@desc males an isalnd in the pixels array
+@param { Number } inc -Increment value for perlin noise, affects "smoothness"
+@param { Number } fallOff -The "steepness" of the border map boundary
+@param { Array[2] } center -Coords of island's center 
+@param { Number } seed -seed for noise()
+@param { Number } squareness -How sqaure the border is
+ */
+const island = (inc = 0.1, fallOff = 3, center = { x: (width / 2), y: (height / 2) },seed= random(100), squareness = 0) => {
+    const borderMap = []
+    const maxDist = dist(0, 0, center.x, center.y)
 
-const bN = (fallOff, foc,squareness) => {
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const distToC = dist(x, y, center.x, center.y)
+            const maskVal = map(distToC, 0, maxDist, 1, 0) ** fallOff
+            borderMap.push(maskVal);
+        }
+    }
+
+    let yoff = 0;
+    noiseSeed(seed)
+    loadPixels();
+    for (let y = 0; y < height; y++) {
+        let xoff = 0;
+        for (let x = 0; x < width; x++) {
+            const index = (x + y * width) * 4
+            const r = noise(xoff, yoff) * borderMap[index / 4]
+            pixels[index + 0] = r * 255;
+            pixels[index + 1] = r * 255;
+            pixels[index + 2] = r * 255;
+            pixels[index + 3] = 255;
+            xoff += inc;
+        }
+        yoff += inc;
+    }
+    updatePixels();
+
+
+}
+
+
+
+// wokring
+// let bn = (fallOff) => {
+//     const borderMap = []
+//     for (let y = 0; y < height; y++) {
+//         for (let x = 0; x < width; x++) {
+//             const distToC = dist(y, x, 50, 50)
+//             const maskVal = map(distToC, 0, 70, 1, 0) ** fallOff
+//             borderMap.push(maskVal);
+//             // borderMap.push(maskVal);
+//             // borderMap.push(maskVal);
+//             // borderMap.push(maskVal);
+//         }
+//     }
+//     return borderMap
+// }
+
+// let rn = (inc, mask, w) => {
+//     let yoff = 0;
+//     noiseSeed(35)
+//     loadPixels();
+//     for (let y = 0; y < height; y++) {
+//         let xoff = 0;
+//         for (let x = 0; x < width; x++) {
+//             const index = (x + y * width) * 4
+
+//             let r = 0
+//             if (w == "noise") r = noise(xoff, yoff)
+//             else if (w == "mask") r = mask[index/4]
+//             else r = noise(xoff, yoff) * mask[index/4]
+
+//             pixels[index + 0] = r * 255;
+//             pixels[index + 1] = r * 255;
+//             pixels[index + 2] = r * 255;
+//             pixels[index + 3] = 255;
+//             xoff += inc;
+//         }
+//         yoff += inc;
+//     }
+//     updatePixels();
+// }
+
+const bN = (fallOff, foc, squareness) => {
     const borderMap = []
     const focus = foc || { //const for now, Parameterize this later
         x: width * pd / 2,
         y: height * pd / 2
     }
     const maxDist = dist(0, 0, width * pd, height * pd)
-    for (let y = 0; y < height*pd; y++) {
-        for (let x = 0; x < width*pd; x++) {
+    for (let y = 0; y < height * pd; y++) {
+        for (let x = 0; x < width * pd; x++) {
             const distToFocus = dist(x, y, focus.x, focus.y)
-            const maskVal = map(fallOff * distToFocus, 0,maxDist, 1, 0)
+            const maskVal = map(fallOff * distToFocus, 0, maxDist, 1, 0)
             borderMap.push(maskVal)
         }
     }
@@ -68,43 +154,6 @@ const bN = (fallOff, foc,squareness) => {
     console.log("killer killin")
     return borderMap
 }
-
-let bn = (fallOff) => {
-    const borderMap = []
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const distToC = dist( y,x,50,50)
-            const maskVal = map(distToC, 0,70, 1, 0)**fallOff
-            borderMap.push(maskVal);borderMap.push(maskVal);borderMap.push(maskVal);borderMap.push(maskVal)
-        }
-    }
-    return borderMap
-}
-
-let rn = (inc, mask,w) => {
-    let yoff = 0;
-    noiseSeed(35)
-    loadPixels();
-    for (let y = 0; y < height; y++) {
-        let xoff = 0;
-        for (let x = 0; x < width; x++) {
-            let index = (x + y * width)*4
-            let r =0
-            if(w=="noise"){
-                r =noise(xoff,yoff)
-            }else if(w=="mask"){
-                r = mask[index]
-            }else r =noise(xoff,yoff)*mask[index]
-            pixels[index + 0] = r*255;
-            pixels[index + 1] = r*255;
-            pixels[index + 2] = r*255;
-            pixels[index + 3] = 255;
-            xoff += inc;
-        }
-        yoff += inc;
-    }
-    updatePixels();
-} 
 
 const rs2 = (inc, mask, seed = 35) => {
     const got = []
@@ -245,7 +294,7 @@ const borderNoise = (fallOff, squareness) => {
         const x = i % (width * pd)
         const y = floor(i / (width * pd))
         const distToFocus = dist(x, y, focus.x, focus.y)
-        const maskVal = map(fallOff * distToFocus, 0, maxDist/2, 1, 0)
+        const maskVal = map(fallOff * distToFocus, 0, maxDist / 2, 1, 0)
         borderMap.push(maskVal)
     }
     console.log("bordermaskers be bordermaskin")
