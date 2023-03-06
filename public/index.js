@@ -31,7 +31,7 @@ function setup() {
     createCanvas(width, height)
     background(0)
     pd = pixelDensity(1)._pixelDensity
-    distList = island2()
+    distList = islandC()
     console.log("Showed")
 }
 
@@ -43,13 +43,99 @@ function setup() {
  * @param { Number } fallOff -The "steepness" of the border map boundary
  * @param { Array[2] } center -Coords of island's center 
  * @param { Number } seed -seed for noise()
- * @param { Number } squareness -How sqaure the border is
+ * @param { Number } _squareness -How sqaure the border is
  * 
  * @desc creates an array of length pixels.length/4 of values between 1 and 0. 1 in the center and tapering off radially to 0 by factor fallOff
  * @issue if user can pick focus how do I algotihmically find the max Dist ( always in a corner: so do a quadrant check and pick "opposite quadrants corner") 
  */
 
-const island2 = (inc = 0.1, fallOff = 3, center = { x: (width / 2), y: (height / 2) }, seed = random(100), squareness = 0) => {
+const islandC = (inc = 0.1, fallOff = 3, center = { x: (width / 2), y: (height / 2) }, seed = random(100), _squareness = 0) => {
+    console.log("updating pixels")
+    const colr = (h, thresh,x) => {
+
+        switch (h) {
+            case (h <= thresh * 1):
+                console.log(h)
+                return { red: 20, green: 60, blue: 200 }
+                break;
+            case (h <= thresh * 2):
+                console.log(h)
+                return { red: 120, green: 180, blue: 30 }
+                break;
+            case (h <= thresh * 3):
+                console.log(h)
+                return { red: 0, green: 255, blue: 12 }
+                break;
+            case (h <= thresh * 4):
+                console.log(h)
+                return { red: 100, green: 100, blue: 100 }
+                break;
+            case (h <= thresh * 5):
+                console.log(h)
+                return { red: 255, green: 255, blue: 255 }
+                break;
+            default:
+                if(x==0)console.log("defaulth",h<thresh)
+                return { red: 200, green: 60, blue: 200 }
+                break;
+        }
+
+    }
+    const sss = []
+    const maxDist = dist(0, 0, center.x, center.y)
+    let yoff = 0;
+    noiseSeed(seed)
+
+    for (let y = 0; y < height; y++) {
+        let xoff = 0;
+        for (let x = 0; x < width; x++) {
+            const distToC = dist(x, y, center.x, center.y)
+            const maskVal = map(distToC, 0, maxDist, 1, 0) ** fallOff
+            const r = noise(xoff, yoff) * maskVal
+            sss.push(r)
+            xoff += inc;
+        }
+        yoff += inc;
+    }
+
+    loadPixels();
+    const sorted = sss.sort((a, b) => a - b)
+    const min = sorted[0]
+    const max = sorted[sorted.length - 1]
+    const thresh = (max - min) / 5
+    console.log(thresh)
+    let ind = 0
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const index = (x + y * width) * 4
+            const color = colr(sss[ind], thresh,x)
+            pixels[index + 0] = color.red;
+            pixels[index + 1] = color.green;
+            pixels[index + 2] = color.blue;
+            pixels[index + 3] = 255;
+            ind++
+        }
+    }
+    updatePixels();
+
+    console.log("updated pixels")
+    return sss
+}
+
+/**Creates an island2
+ *@function 
+ * @desc males an isalnd in the pixels array
+ * @param { Number } inc -Increment value for perlin noise, affects "smoothness"
+ * @param { Number } fallOff -The "steepness" of the border map boundary
+ * @param { Array[2] } center -Coords of island's center 
+ * @param { Number } seed -seed for noise()
+ * @param { Number } _squareness -How sqaure the border is
+ * 
+ * @desc creates an array of length pixels.length/4 of values between 1 and 0. 1 in the center and tapering off radially to 0 by factor fallOff
+ * @issue if user can pick focus how do I algotihmically find the max Dist ( always in a corner: so do a quadrant check and pick "opposite quadrants corner") 
+ */
+
+const island2 = (inc = 0.1, fallOff = 3, center = { x: (width / 2), y: (height / 2) }, seed = random(100), _squareness = 0) => {
     console.log("updating pixels")
     const maxDist = dist(0, 0, center.x, center.y)
     let yoff = 0;
@@ -77,7 +163,12 @@ const island2 = (inc = 0.1, fallOff = 3, center = { x: (width / 2), y: (height /
 function touchStarted() {}
 
 function keyPressed() {
-    if(key == " ") island2()
+    if (key == " ") island2()
+    if (key == "c") islandC()
+    if (key == "lf") decreaseSize()
+    if (key == "rf") increaseSize()
+    if (key == "ua") sharpenNoise()
+    if (key == "da") smoothenNoise()
 }
 
 const gridBasedIsalnd = () => {
