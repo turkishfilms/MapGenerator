@@ -35,7 +35,36 @@ function setup() {
     console.log("Showed")
 }
 
+const colr = (h, thresh,x) => {
 
+    switch (h) {
+        case (h <= thresh * 1):
+            console.log(h)
+            return { red: 20, green: 60, blue: 200 }
+            break;
+        case (h <= thresh * 2):
+            console.log(h)
+            return { red: 120, green: 180, blue: 30 }
+            break;
+        case (h <= thresh * 3):
+            console.log(h)
+            return { red: 0, green: 255, blue: 12 }
+            break;
+        case (h <= thresh * 4):
+            console.log(h)
+            return { red: 100, green: 100, blue: 100 }
+            break;
+        case (h <= thresh * 5):
+            console.log(h)
+            return { red: 255, green: 255, blue: 255 }
+            break;
+        default:
+            if(x==0)console.log("defaulth",h<thresh)
+            return { red: 200, green: 60, blue: 200 }
+            break;
+    }
+
+}
 /**Creates an island2
  *@function 
  * @desc males an isalnd in the pixels array
@@ -48,39 +77,9 @@ function setup() {
  * @desc creates an array of length pixels.length/4 of values between 1 and 0. 1 in the center and tapering off radially to 0 by factor fallOff
  * @issue if user can pick focus how do I algotihmically find the max Dist ( always in a corner: so do a quadrant check and pick "opposite quadrants corner") 
  */
-
 const islandC = (inc = 0.1, fallOff = 3, center = { x: (width / 2), y: (height / 2) }, seed = random(100), _squareness = 0) => {
     console.log("updating pixels")
-    const colr = (h, thresh,x) => {
-
-        switch (h) {
-            case (h <= thresh * 1):
-                console.log(h)
-                return { red: 20, green: 60, blue: 200 }
-                break;
-            case (h <= thresh * 2):
-                console.log(h)
-                return { red: 120, green: 180, blue: 30 }
-                break;
-            case (h <= thresh * 3):
-                console.log(h)
-                return { red: 0, green: 255, blue: 12 }
-                break;
-            case (h <= thresh * 4):
-                console.log(h)
-                return { red: 100, green: 100, blue: 100 }
-                break;
-            case (h <= thresh * 5):
-                console.log(h)
-                return { red: 255, green: 255, blue: 255 }
-                break;
-            default:
-                if(x==0)console.log("defaulth",h<thresh)
-                return { red: 200, green: 60, blue: 200 }
-                break;
-        }
-
-    }
+    
     const sss = []
     const maxDist = dist(0, 0, center.x, center.y)
     let yoff = 0;
